@@ -10,16 +10,20 @@ const SEARCH_URL = `https://api.unsplash.com/search/photos/`;
 function App() {
 	const [loading, setLoading] = useState(false);
 	const [photos, setPhotos] = useState([]);
+	const [page, setPage] = useState(1);
 
 	const fetchImages = async () => {
 		setLoading(true);
 		let url;
-		url = `${MAIN_URL}${CLIENT_ID}`;
+		const urlPage = `&page=${page}`;
+		url = `${MAIN_URL}${CLIENT_ID}${urlPage}`;
 
 		try {
 			const response = await fetch(url);
 			const data = await response.json();
-			setPhotos(data);
+			setPhotos((oldPhotos) => {
+				return [...oldPhotos, ...data];
+			});
 			setLoading(false);
 		} catch (error) {
 			setLoading(false);
@@ -27,33 +31,51 @@ function App() {
 		}
 	};
 
+	useEffect(() => {
+		fetchImages();
+	}, [page]);
+
+	useEffect(() => {
+		const event = window.addEventListener("scroll", () => {
+			if (
+				!loading &&
+				window.innerHeight + window.scrollY >=
+					document.body.scrollHeight - 2
+			) {
+				setPage((oldPage) => {
+					return oldPage + 1;
+				});
+			}
+		});
+
+		return () => window.removeEventListener("scroll", event);
+	}, []);
+
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		console.log("dupa");
 	};
 
-	useEffect(() => {
-		fetchImages();
-	}, []);
-
-	return <>
-		<SearchSection>
-			<Form>
-				<Input type="text" placeholder="search" />
-				<SubmitBtn type="submit" onClick={handleSubmit}>
-					<FaSearch />
-				</SubmitBtn>
-			</Form>
-		</SearchSection>
-		<PhotosSection>
-			<PhotosCenter>
-				{photos.map((photo) => {
-					return <Photo key={photo.id} {...photo} />;
-				})}
-			</PhotosCenter>
-			{loading && <Text>Loading...</Text>}
-		</PhotosSection>
-	</>;
+	return (
+		<>
+			<SearchSection>
+				<Form>
+					<Input type="text" placeholder="search" />
+					<SubmitBtn type="submit" onClick={handleSubmit}>
+						<FaSearch />
+					</SubmitBtn>
+				</Form>
+			</SearchSection>
+			<PhotosSection>
+				<PhotosCenter>
+					{photos.map((photo) => {
+						return <Photo key={photo.id} {...photo} />;
+					})}
+				</PhotosCenter>
+				{loading && <Text>Loading...</Text>}
+			</PhotosSection>
+		</>
+	);
 }
 
 export default App;
@@ -77,9 +99,9 @@ const Input = styled.input`
 	padding: 0.8rem 1.2rem;
 	border: none;
 	text-transform: capitalize;
-	letter-spacing: .2rem;
+	letter-spacing: 0.2rem;
 	font-size: 1.4rem;
-	border-bottom: .2rem solid #333;
+	border-bottom: 0.2rem solid #333;
 	background: transparent;
 	outline: none;
 	&::placeholder {
@@ -107,7 +129,7 @@ const PhotosCenter = styled.div`
 	display: grid;
 	gap: 2rem;
 	@media screen and (min-width: 576px) {
-		grid-template-columns: repeat(auto-fill, minmax(368px, 1fr))
+		grid-template-columns: repeat(auto-fill, minmax(368px, 1fr));
 	}
 `;
 
