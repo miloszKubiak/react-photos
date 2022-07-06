@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import styled from "styled-components";
 import { FaSearch } from "react-icons/fa";
 import Photo from "./Photo";
 
@@ -18,18 +19,99 @@ function App() {
 		try {
 			const response = await fetch(url);
 			const data = await response.json();
-			console.log(data);
+			setPhotos(data);
+			setLoading(false);
 		} catch (error) {
 			setLoading(false);
 			console.log(error.response);
 		}
 	};
 
+	const handleSubmit = (e) => {
+		e.preventDefault();
+		console.log("dupa");
+	};
+
 	useEffect(() => {
 		fetchImages();
 	}, []);
 
-	return <h2>dupa</h2>;
+	return <>
+		<SearchSection>
+			<Form>
+				<Input type="text" placeholder="search" />
+				<SubmitBtn type="submit" onClick={handleSubmit}>
+					<FaSearch />
+				</SubmitBtn>
+			</Form>
+		</SearchSection>
+		<PhotosSection>
+			<PhotosCenter>
+				{photos.map((photo) => {
+					return <Photo key={photo.id} {...photo} />;
+				})}
+			</PhotosCenter>
+			{loading && <Text>Loading...</Text>}
+		</PhotosSection>
+	</>;
 }
 
 export default App;
+
+const SearchSection = styled.section`
+	padding: 6rem 0 0 0;
+	width: 90vw;
+	max-width: 1170px;
+	margin: 0 auto;
+`;
+
+const Form = styled.form`
+	display: flex;
+	@media screen and (min-width: 576px) {
+		max-width: 620px;
+	}
+`;
+
+const Input = styled.input`
+	width: 70%;
+	padding: 0.8rem 1.2rem;
+	border: none;
+	text-transform: capitalize;
+	letter-spacing: .2rem;
+	font-size: 1.4rem;
+	border-bottom: .2rem solid #333;
+	background: transparent;
+	outline: none;
+	&::placeholder {
+		color: #444;
+	}
+`;
+
+const SubmitBtn = styled.button`
+	padding: 0.8rem 1.6rem;
+	border: none;
+	font-size: 1.4rem;
+	border-bottom: 0.2rem solid #333;
+	background: transparent;
+	color: #444;
+`;
+
+const PhotosSection = styled.section`
+	padding: 5rem 0;
+`;
+
+const PhotosCenter = styled.div`
+	width: 90vw;
+	max-width: 1170px;
+	margin: 0 auto;
+	display: grid;
+	gap: 2rem;
+	@media screen and (min-width: 576px) {
+		grid-template-columns: repeat(auto-fill, minmax(368px, 1fr))
+	}
+`;
+
+const Text = styled.h2`
+	text-align: center;
+	padding: 3rem;
+`;
