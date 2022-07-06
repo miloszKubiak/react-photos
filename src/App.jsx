@@ -11,18 +11,30 @@ function App() {
 	const [loading, setLoading] = useState(false);
 	const [photos, setPhotos] = useState([]);
 	const [page, setPage] = useState(1);
+	const [query, setQuery] = useState("");
 
 	const fetchImages = async () => {
 		setLoading(true);
 		let url;
 		const urlPage = `&page=${page}`;
-		url = `${MAIN_URL}${CLIENT_ID}${urlPage}`;
+		const urlQuery = `&query=${query}`;
+
+		if (query) {
+			url = `${SEARCH_URL}${CLIENT_ID}${urlPage}${urlQuery}`;
+		} else {
+			url = `${MAIN_URL}${CLIENT_ID}${urlPage}`;
+		}
 
 		try {
 			const response = await fetch(url);
 			const data = await response.json();
+			console.log(data);
 			setPhotos((oldPhotos) => {
-				return [...oldPhotos, ...data];
+				if (query) {
+					return [...oldPhotos, ...data.results];
+				} else {
+					return [...oldPhotos, ...data];
+				}
 			});
 			setLoading(false);
 		} catch (error) {
@@ -53,14 +65,19 @@ function App() {
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		console.log("dupa");
+		fetchImages();
 	};
 
 	return (
 		<>
 			<SearchSection>
 				<Form>
-					<Input type="text" placeholder="search" />
+					<Input
+						type="text"
+						placeholder="search"
+						value={query}
+						onChange={(e) => setQuery(e.target.value)}
+					/>
 					<SubmitBtn type="submit" onClick={handleSubmit}>
 						<FaSearch />
 					</SubmitBtn>
